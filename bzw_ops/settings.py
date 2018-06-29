@@ -36,6 +36,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 STATIC_URL = '/static/'
 STATICFILES_DIRS = (
+    # List static files outside of apps, here.
 )
 
 # Simplified static file serving.
@@ -64,6 +65,7 @@ SERVER_EMAIL = 'liamdgray@gmail.com'  # Django only uses this for error email.
 ALLOWED_HOSTS = (
     'xerocraft-django.herokuapp.com',
     'xis.xerocraft.us',
+    'xis-test.herokuapp.com',
     'xis-test-lg.herokuapp.com',
 )
 if ISDEVHOST:
@@ -114,7 +116,7 @@ if ISDEVHOST:
     INSTALLED_APPS += (
         'django_jenkins',
         'django_extensions',
-        #'debug_toolbar',
+        'debug_toolbar',
     )
 
 INSTALLED_APPS += (
@@ -155,6 +157,12 @@ MIDDLEWARE = (
     'django.middleware.security.SecurityMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
 )
+
+if DEBUG:
+    MIDDLEWARE += (
+        'debug_toolbar.middleware.DebugToolbarMiddleware',
+    )
+    INTERNAL_IPS = ('127.0.0.1', '192.168.0.101',)
 
 SESSION_COOKIE_AGE = 10*60
 SESSION_SECURITY_WARN_AFTER = 9*60
@@ -332,6 +340,11 @@ REST_FRAMEWORK = {
         'django_filters.rest_framework.DjangoFilterBackend',
         #'rest_framework.filters.DjangoFilterBackend',
         'rest_framework.filters.OrderingFilter',
+    ],
+
+    'DEFAULT_RENDERER_CLASSES': [
+        'rest_framework.renderers.JSONRenderer',
+        #'rest_framework.renderers.BrowsableAPIRenderer',
     ],
 
     'PAGE_SIZE': 100,

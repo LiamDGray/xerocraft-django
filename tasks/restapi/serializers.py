@@ -3,7 +3,6 @@
 
 # Third Party
 from rest_framework import serializers
-from django.contrib.auth.models import User
 
 # Local
 import tasks.models as tm
@@ -14,13 +13,13 @@ class ClaimSerializer(serializers.ModelSerializer):
 
     claimed_task = serializers.HyperlinkedRelatedField(
         view_name='task:task-detail',
-        queryset = tm.Task.objects.all(),
+        queryset=tm.Task.objects.all(),
         style={'base_template': 'input.html'},
     )
 
     claiming_member = serializers.HyperlinkedRelatedField(
         view_name='memb:member-detail',
-        queryset = mm.Member.objects.all(),
+        queryset=mm.Member.objects.all(),
         style={'base_template': 'input.html'},
     )
 
@@ -49,7 +48,7 @@ class PlaySerializer(serializers.ModelSerializer):
 
     playing_member = serializers.HyperlinkedRelatedField(
         view_name='memb:member-detail',
-        queryset = mm.Member.objects.all(),
+        queryset=mm.Member.objects.all(),
         style={'base_template': 'input.html'},
     )
 
@@ -162,7 +161,7 @@ class WorkSerializer(serializers.ModelSerializer):
         view_name='memb:member-detail',
         queryset=mm.Member.objects.all(),
         allow_null=True,
-        style = {'base_template': 'input.html'},
+        style={'base_template': 'input.html'},
     )
     notes = WorkNoteSerializer(many=True, read_only=True)
 
@@ -179,3 +178,77 @@ class WorkSerializer(serializers.ModelSerializer):
         )
 
 
+# ---------------------------------------------------------------------------
+# CLASSES
+# ---------------------------------------------------------------------------
+
+class ClassxPersonSerializer(serializers.ModelSerializer):
+
+    the_class = serializers.HyperlinkedRelatedField(
+        view_name='task:class-detail',
+        queryset=tm.Class.objects.all(),
+        style={'base_template': 'input.html'},
+    )
+
+    the_person = serializers.HyperlinkedRelatedField(
+        view_name='memb:member-detail',
+        queryset=mm.Member.objects.all(),
+        style={'base_template': 'input.html'},
+    )
+
+    ro_person_firstname = serializers.CharField(source='person_firstname')
+    ro_person_username = serializers.CharField(source='person_username')
+    ro_paid = serializers.CharField(source='paid')
+
+    class Meta:
+        model = tm.Class_x_Person
+        fields = (
+            'the_class',
+            'the_person',
+            'status',
+            'status_updated',
+            'ro_paid',
+            'ro_person_firstname',
+            'ro_person_username',
+        )
+
+
+class ClassSerializer(serializers.ModelSerializer):
+
+    teaching_task = serializers.HyperlinkedRelatedField(
+        view_name='task:task-detail',
+        queryset=tm.Task.objects.all(),
+        style={'base_template': 'input.html'},
+    )
+
+    persons = ClassxPersonSerializer(
+        read_only=True, many=True,
+        source='class_x_person_set'
+    )
+
+    ro_scheduled_date = serializers.DateField(source='scheduled_date')
+    ro_start_time = serializers.TimeField(source='start_time')
+
+    class Meta:
+        model = tm.Class
+        fields = (
+            'id',
+            'ro_scheduled_date',
+            'ro_start_time',
+            'title',
+            'short_desc',
+            'info',
+            'canceled',
+            'max_students',
+            'department',
+            'teaching_task',
+            'member_price',
+            'nonmember_price',
+            'materials_fee',
+            'prerequisite_tag',
+            'certification_tag',
+            'minor_policy',
+            'publicity_image',
+            'printed_handout',
+            'persons',
+        )

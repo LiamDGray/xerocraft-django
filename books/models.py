@@ -19,7 +19,7 @@ from django.utils.translation import ugettext_lazy as _
 from django.conf import settings
 from nameparser import HumanName
 from django.urls import reverse
-from dateutil.relativedelta import relativedelta
+
 
 # Local
 from abutils.utils import generate_ctrlid
@@ -40,8 +40,12 @@ ACCT_REVENUE_DONATION = 35  # General Donations.
 ACCT_REVENUE_MEMBERSHIP = 6
 ACCT_REVENUE_DISCOUNT = 49
 
-PROD_HOST = Site.objects.get_current().domain
-DEV_HOST = "localhost:8000"
+try:
+    PROD_HOST = Site.objects.get_current().domain
+    DEV_HOST = "localhost:8000"
+except:
+    PROD_HOST = "example.com"
+    DEV_HOST = "localhost:8000"
 
 
 def quote_entity(name: str) -> str:
@@ -360,7 +364,7 @@ class JournalEntryLineItem(models.Model):
 
     amount = models.DecimalField(max_digits=6, decimal_places=2, null=False, blank=False,
         help_text="The amount of the increase or decrease (always positive)",
-        validators=[MinValueValidator(Decimal('0.00'))])
+        validators=[MinValueValidator(DEC0)])
 
     description = models.CharField(max_length=128, blank=True,
         help_text="A brief description of this line item.")
@@ -464,7 +468,7 @@ class Journaler(models.Model):
     @classmethod
     def batch(cls, je: JournalEntry):
         """Adds a JournalEntry instance to the batch that's accumulating for eventual bulk_create."""
-        balance = Decimal("0.00")
+        balance = DEC0
         for jeli in je.prebatched_lineitems:
             if jeli.iscredit():
                 balance += jeli.amount
@@ -559,7 +563,7 @@ class Budget(Journaler):
 
     amount = models.DecimalField(max_digits=7, decimal_places=2, null=False, blank=False,
         help_text="The amount budgeted for the year.",
-        validators=[MinValueValidator(Decimal('0.00'))])
+        validators=[MinValueValidator(DEC0)])
 
     def _create_journalentries(self):
         je = JournalEntry(
@@ -610,7 +614,7 @@ class CashTransfer(Journaler):  # Started life as a cash xfer but is now a more 
 
     amount = models.DecimalField(max_digits=7, decimal_places=2, null=False, blank=False,
         help_text="The amount of the transfer.",
-        validators=[MinValueValidator(Decimal('0.00'))])
+        validators=[MinValueValidator(DEC0)])
 
     why = models.CharField(max_length=80, blank=False,
         help_text="A short explanation of the transfer.")
